@@ -14,12 +14,8 @@ editor_options:
 ---
 
 #### How to make, move & copy folders
-In some cases while analysing data we need to create a workflow   
-that generates results in different kinds of files e.g. plots and tables.  
-Thus, is preferred to organize them in different folders.  
-Fortunately we could perform folder / file manipulation using R.  
-We must be always very careful with these kind of data handling  
-considering that we could lose data if we are not extremely precise.  
+While working with data and analysing them we need to organize our results in specific folders.   
+Fortunately we could perform folder / file manipulation using R.   
 ```{r Folder handling}
 # 1.1 make a folder                                                         ----
 help(dir.create)#or ?dir.create()  read about this function 
