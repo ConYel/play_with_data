@@ -1,0 +1,57 @@
+---
+title: "Play with Data v0.1"
+output:
+  html_notebook: default
+  pdf_document: default
+editor_options:
+  chunk_output_type: inline
+params:
+  date: !r lubridate::today()
+---
+
+### Load Libraries
+```{r "Load Libraries"}
+library(tidyverse)
+library("stephenturner/annotables")
+
+```
+#### How to make, move & copy folders 
+```{r}
+# 1.1 make a folder                                                         ----
+help(dir.create)#or ?dir.create() # read about this function 
+dir.create("my_Data")
+
+# we can give names to a factor and use it to make more folders
+fold_names <- c("my_data", "my_plots", "my_results")
+dir.create(fold_names) # we get an Error
+
+# we need to use for or sapply to create multiple files
+sapply()
+sapply(fold_names, function(x) dir.create(x)) 
+# or with for (1):
+for (i in seq(along=fold_names)) {
+  folder <- fold_names[i]
+  dir.create(folder)
+}
+# with for (2):
+for (i in fold_names) {
+    dir.create(i)
+}
+```
+
+
+
+
+### Example Dataset
+```{r "Dataset"}
+set.seed(1313)
+FileName <- as.character(rep(paste0("file",1:4,".txt"),each=10))
+V1 <-  as.character(rep(paste0("t00",1:4,"1872"),10)) 
+V2 <-  sample(1:10000, 40)    
+V4 <- as.character(rep(paste0("randomRNa",1:5,"mt"),8))
+V6 <- rep(sapply(c(27:31),
+          function(x) 
+          paste(sample(c("A","C","T","G"),x, replace=TRUE), collapse="")),8)
+DT_sample <- tibble::tibble(FileName,V1,V2,V4,V6)
+```
+
