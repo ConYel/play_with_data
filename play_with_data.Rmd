@@ -3,9 +3,9 @@ title: "Play with Data v0.1"
 author: "Constantinos Yeles"
 date: "April 23, 2019"
 output:
+  html_notebook: default
   html_document:
     df_print: paged
-  html_notebook: default
   pdf_document: default
 params:
   date: !r lubridate::today()
@@ -14,14 +14,14 @@ editor_options:
 ---
 
 #### How to make, move & copy folders
-While working with data and analysing them we need to organize our results in specific folders.   
+While working with data and analyzing them we need to organize our results in specific folders.   
 Fortunately we could perform folder / file manipulation using R.   
 ```{r Folder handling}
 # 1.1 make a folder                                                         ----
-help(dir.create)#or ?dir.create()  read about this function 
+help(dir.create)#or ?dir.create()  get help about this function 
 dir.create("my_Data")
 
-# we can give names to a factor and use it to make more folders
+# we can give names to a vector and use it to make more folders
 fold_names <- c("my_data", "my_plots", "my_results")
 dir.create(fold_names) # we get an Error
 
@@ -48,7 +48,7 @@ dat_names
 # make folders
 sapply(dat_names, dir.create) 
 # 1.2 copy or move folders                                                  ----
-# we want to have in each dataset "my_data", "my_plots", "my_results" folders:
+# we want to have in each dataset "my_data", "my_plots" and "my_results" folders:
 # for one folder:
 file.copy(fold_names,"my_methylation_dataset",recursive = TRUE)
 # for all:
@@ -58,9 +58,8 @@ sapply(dat_names, function(x) file.copy(fold_names,x,recursive = TRUE))
 file.rename("my_Data", "my_exome_dataset/my_Data_1")
 ```
 #### Working directory
-A working directory in R is the main folder,the current working enviroment,  
-in which contains all user-defined objects. In order to work in different  
-directories we can apply these functions:  
+A working directory in R is the main folder, the current working environment,  
+in which all user-defined objects are contained. 
 ```{r working dirs}
 # get the working directory
 getwd()
@@ -69,12 +68,12 @@ setwd("my_smallRNA_dataset/")
 ```
 ### Basic manipulation of data
 #### Example Dataset
-Let's make a gene set dataset first
+Let's make a gene set data set 
 ```{r "Dataset"}
-# I always prefer to keep the data of my analysis in the name of resulted
-# files so we can use :
+# I always prefer to tag my results with the date of the analysis
+# in the name of resulted files. so we can use :
 Sys.time()
-# I prefer to use only the date with the name of the month and underscore "_"
+# I prefer to use only the date with the name of the month and underscore "_":
 date <- gsub(" ","_",format(Sys.time(), "%b %d %Y"))
 date
 # load packages
@@ -82,7 +81,7 @@ library(tidyverse)
 library(annotables)# to install run : BiocManager::install( "stephenturner/annotables")
 set.seed(313) # reproducibility
 
-FileName <- rep(paste0("file", 1:5,".txt"),each=10) # factor with
+FileName <- rep(paste0("file", 1:5,".txt"),each=10) # character vector with
 #different file names of our aligned samples
 FileName
 # Same output different function (str_glue)
@@ -106,15 +105,14 @@ test_data <- tibble::tibble(FileName,read_id,read_count,ENST,read_sequence)
 test_data
 
 # if we want to check how many reads are per "library" then we could use
-#summarise function
+# summarise function
 summarise(test_data,sum(read_count))# not very informative
-# we want per library, so we need to group 
-# first our dataset and then use summarise.
-test_data %>% # using pipe %>% for easier implementation
-  group_by(FileName) %>% # we group it by each "FileName" which equals to library
+# we want per library, so we need to group first by "library" our dataset and then use summarise.
+test_data %>% # using pipe %>% for easier implementation, help(%>%) to learn more # help(%>%) to learn more the "pipe"
+  group_by(FileName) %>% # we group it by each "FileName" which equals to a sample library
   summarise(sum(read_count))
 
-# tables are good for intepretation of the data but we could plot them easily
+# tables are good for interpretation of the data but we could plot them easily
 # with ggplot
 test_data %>% 
   group_by(FileName) %>% 
