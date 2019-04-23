@@ -1,31 +1,35 @@
 ---
 title: "Play with Data v0.1"
+author: "Constantinos Yeles"
+date: "April 23, 2019"
 output:
+  html_document:
+    df_print: paged
   html_notebook: default
   pdf_document: default
-editor_options:
-  chunk_output_type: inline
 params:
   date: !r lubridate::today()
+editor_options:
+  chunk_output_type: inline
 ---
 
-### Load Libraries
-```{r "Load Libraries"}
-library(tidyverse)
-library("stephenturner/annotables")
-
-```
-#### How to make, move & copy folders 
-```{r}
+#### How to make, move & copy folders
+In some cases while analysing data we need to create a workflow   
+that generates results in different kinds of files e.g. plots and tables.  
+Thus, is preferred to organize them in different folders.  
+Fortunately we could perform folder / file manipulation using R.  
+We must be always very careful with these kind of data handling  
+considering that we could lose data if we are not extremely precise.  
+```{r Folder handling}
 # 1.1 make a folder                                                         ----
-help(dir.create)#or ?dir.create() # read about this function 
+help(dir.create)#or ?dir.create()  read about this function 
 dir.create("my_Data")
 
 # we can give names to a factor and use it to make more folders
 fold_names <- c("my_data", "my_plots", "my_results")
 dir.create(fold_names) # we get an Error
 
-# we need to use for or sapply to create multiple files
+# we need to use for or sapply to create multiple folders
 sapply()
 sapply(fold_names, function(x) dir.create(x)) 
 # or with for (1):
@@ -37,21 +41,90 @@ for (i in seq(along=fold_names)) {
 for (i in fold_names) {
     dir.create(i)
 }
+
+# if we have different datasets it would be more convinient to 
+# have different folders for each dataset
+dat_names <- c("my_1st_dataset", "my_2nd_dataset") # or we could use glue package
+dat_names 
+name_of_datasets <- c("methylation", "smallRNA", "exome" )
+dat_names <- str_glue("my_{name_of_datasets}_dataset") 
+dat_names
+# make folders
+sapply(dat_names, dir.create) 
+# 1.2 copy or move folders                                                  ----
+# we want to have in each dataset "my_data", "my_plots", "my_results" folders:
+# for one folder:
+file.copy(fold_names,"my_methylation_dataset",recursive = TRUE)
+# for all:
+sapply(dat_names, function(x) file.copy(fold_names,x,recursive = TRUE))
+
+# to move a folder we could use rename which is used also for renaming folder/files
+file.rename("my_Data", "my_exome_dataset/my_Data_1")
 ```
-
-
-
-
-### Example Dataset
+#### Working directory
+A working directory in R is the main folder,the current working enviroment,  
+in which contains all user-defined objects. In order to work in different  
+directories we can apply these functions:  
+```{r working dirs}
+# get the working directory
+getwd()
+# set the working directory
+setwd("my_smallRNA_dataset/")
+```
+### Basic manipulation of data
+#### Example Dataset
+Let's make a gene set dataset first
 ```{r "Dataset"}
-set.seed(1313)
-FileName <- as.character(rep(paste0("file",1:4,".txt"),each=10))
-V1 <-  as.character(rep(paste0("t00",1:4,"1872"),10)) 
-V2 <-  sample(1:10000, 40)    
-V4 <- as.character(rep(paste0("randomRNa",1:5,"mt"),8))
-V6 <- rep(sapply(c(27:31),
-          function(x) 
-          paste(sample(c("A","C","T","G"),x, replace=TRUE), collapse="")),8)
-DT_sample <- tibble::tibble(FileName,V1,V2,V4,V6)
-```
+# I always prefer to keep the data of my analysis in the name of resulted
+# files so we can use :
+Sys.time()
+# I prefer to use only the date with the name of the month and underscore "_"
+date <- gsub(" ","_",format(Sys.time(), "%b %d %Y"))
+date
+# load packages
+library(tidyverse)
+library(annotables)# to install run : BiocManager::install( "stephenturner/annotables")
+set.seed(313) # reproducibility
 
+FileName <- rep(paste0("file", 1:5,".txt"),each=10) # factor with
+#different file names of our aligned samples
+FileName
+# Same output different function (str_glue)
+number_of_files <- c(1:5) # two sample files, each for 1 condition
+FileName <- rep(str_glue("file{number_of_files}.txt"),each = 10) %>% as_factor()
+FileName
+
+read_id <-  rep(paste0("t00", 1:4,1000:1009), 5) %>% as_factor() # factor with
+# id of reads "aligned"
+read_count <-  sample(1:10000, 50)  # integer with number of reads  
+ENST <- rep(sample(grch38_tx2gene$enstxp,10),5) %>% as_factor() # factor with
+# transcript id
+
+# use sapply to create sampl read sequences
+read_sequence <- rep(sapply(c(31:40),
+          function(x) 
+          paste(sample(c("A","C","T","G"),x, replace=TRUE), collapse="")),5)
+
+# create the dataset in long format using tibble function
+test_data <- tibble::tibble(FileName,read_id,read_count,ENST,read_sequence)
+test_data
+
+# if we want to check how many reads are per "library" then we could use
+#summarise function
+summarise(test_data,sum(read_count))# not very informative
+# we want per library, so we need to group 
+# first our dataset and then use summarise.
+test_data %>% # using pipe %>% for easier implementation
+  group_by(FileName) %>% # we group it by each "FileName" which equals to library
+  summarise(sum(read_count))
+
+# tables are good for intepretation of the data but we could plot them easily
+# with ggplot
+test_data %>% 
+  group_by(FileName) %>% 
+  summarise( LibSum = sum(read_count)) %>% 
+  ggplot() +
+  geom_col(mapping = aes(x=FileName, y=LibSum, fill = FileName))
+
+```
+why [set.seed](https://stackoverflow.com/questions/13605271/reasons-for-using-the-set-seed-function)?
