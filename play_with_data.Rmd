@@ -40,15 +40,16 @@ for (i in fold_names) {
 
 # if we have different datasets it would be more convinient to 
 # have different folders for each dataset
-dat_names <- c("my_1st_dataset", "my_2nd_dataset") # or we could use glue package
-dat_names 
+dat_names <- c("my_1st_dataset", "my_2nd_dataset") 
+dat_names # or we could use glue package
 name_of_datasets <- c("methylation", "smallRNA", "exome" )
 dat_names <- str_glue("my_{name_of_datasets}_dataset") 
 dat_names
 # make folders
 sapply(dat_names, dir.create) 
 # 1.2 copy or move folders                                                  ----
-# we want to have in each dataset "my_data", "my_plots" and "my_results" folders:
+# we want to have in each dataset folder various subfolders:
+# "my_data", "my_plots" and "my_results"
 # for one folder:
 file.copy(fold_names,"my_methylation_dataset",recursive = TRUE)
 # for all:
